@@ -251,7 +251,10 @@ module Ransack
         # Checkout active_record/relation/query_methods.rb +build_joins+ for
         # reference. Lots of duplicated code maybe we can avoid it
         def build_joins(relation)
-          buckets = relation.joins_values.group_by do |join|
+          buckets = relation.joins_values
+          buckets += relation.left_outer_joins_values if ::ActiveRecord::VERSION::MAJOR >= 5
+
+          buckets = buckets.group_by do |join|
             case join
             when String
               :string_join
@@ -290,7 +293,7 @@ module Ransack
             alias_tracker = ::ActiveRecord::Associations::AliasTracker.create(::ActiveRecord::Base.connection, relation.table.name, join_list)
             join_dependency = JoinDependency.new(relation.klass, relation.table, association_joins, alias_tracker)
             join_nodes.each do |join|
-              join_dependency.alias_tracker.aliases[join.left.name.downcase] = 1
+              join_dependency.send(:alias_tracker).aliases[join.left.name.downcase] = 1
             end
           end
 

@@ -92,8 +92,13 @@ class Person < ActiveRecord::Base
       )
   end
 
+
   ransacker :sql_literal_id do
     Arel.sql('people.id')
+  end
+
+  ransacker :name_case_insensitive, type: :string do
+    arel_table[:name].lower
   end
 
   ransacker :with_arguments, args: [:parent, :ransacker_args] do |parent, args|
@@ -109,6 +114,7 @@ class Person < ActiveRecord::Base
     .squish
     Arel.sql(query)
   end
+
 
   def self.ransackable_attributes(auth_object = nil)
     if auth_object == :admin
